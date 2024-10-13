@@ -1,0 +1,44 @@
+name: Frontend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # Update to your required version
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+
+      # Run linter (Prettier or ESLint)
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: frontend
+
+      # Run tests
+      - name: Run tests
+        run: npm run test -- --ci --watchAll=false
+        working-directory: frontend
+
+      # Build the project
+      - name: Build
+        run: npm run build
+        working-directory: frontend
