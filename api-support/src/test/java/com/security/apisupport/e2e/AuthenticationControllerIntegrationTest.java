@@ -1,12 +1,10 @@
-package com.security.apisupport;
+package com.security.apisupport.e2e;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.security.apisupport.dtos.LoginUserDto;
 import com.security.apisupport.dtos.RegisterUserDto;
 import com.security.apisupport.entities.User;
 import com.security.apisupport.repositories.UserRepository;
-import com.security.apisupport.services.AuthenticationService;
-import com.security.apisupport.services.UserService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,8 +18,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,11 +58,15 @@ public class AuthenticationControllerIntegrationTest {
         loginUserDto.setPassword("password");
     }
 
-/*
+
     @Test
     @WithMockUser
-    @Order(2)
     void shouldAuthenticateUser_andReturnToken() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerUserDto)))
+                .andExpect(status().isCreated());
+
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginUserDto)))
@@ -72,11 +74,24 @@ public class AuthenticationControllerIntegrationTest {
                 .andExpect(jsonPath("$.access_token").isNotEmpty())
                 .andExpect(jsonPath("$.refresh_token").isNotEmpty());
     }
-*/
 
     @Test
     @WithMockUser
-    @Order(1)
+    void shouldHandleInvalidLogin_andReturnUnAuthorized() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerUserDto)))
+                .andExpect(status().isCreated());
+
+        loginUserDto.setPassword("WrongPassword");
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginUserDto)))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @WithMockUser
     void shouldRegisterUser_andReturnCreatedUser() throws Exception {
         mockMvc.perform(post("/api/v1/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)

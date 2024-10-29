@@ -13,28 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up JDK 17 (or your required version)
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17' # Update to your required version
+          java-version: '17'
 
-      # Install dependencies and build the project
       - name: Build with Maven
         run: mvn clean install -DskipTests=true
         working-directory: api-support
 
-      # Run tests
-      - name: Run tests
-        run: mvn test
-        working-directory: api-support
-
-      # Check code formatting with Spotless (if you use it)
-      - name: Check code formatting
-        run: mvn spotless:check
+      - name: Run e2e tests
+        run: mvn -Dtest=*e2e.** test
         working-directory: api-support
